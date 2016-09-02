@@ -8,6 +8,8 @@ ext {
 configurations {
     all*.exclude group: 'javax.servlet', module: 'servlet-api'
     all*.exclude group: "javax.rs.ws", module: 'jsr311-api' //we don't want JSR311 jars- they are the wrong version.
+    doclet
+    docletExtSrc
 }
 
 
@@ -94,6 +96,7 @@ war {
     from "$project.buildDir/reports"
 }
 
-appengineExplodeApp.dependsOn generateApiDocs
+if (tasks.findByName("appengineExplodeApp") != null)
+    appengineExplodeApp.dependsOn generateApiDocs
 
 generateApiDocs.outputs.upToDateWhen({return false; })
