@@ -1,16 +1,13 @@
 /*
 This Gradle plugin will provide support for javascript applications.
  */
+task clean
+
 task installNodeTools(type: Exec) {
     workingDir "$projectDir"
     commandLine 'npm', 'install'
-    standardOutput = new ByteArrayOutputStream()
 
-    ext.output = {
-        return standardOutput.toString()
-    }
-
-    outputs.dir "${projectDir}/node_modules}"
+    outputs.dir "${projectDir}/node_modules"
     inputs.file "${projectDir}/package.json"
 
 
@@ -20,30 +17,20 @@ task installNodeTools(type: Exec) {
 task gulpClean(type: Exec) {
     workingDir "$projectDir"
     commandLine 'gulp', 'clean'
-    standardOutput = new ByteArrayOutputStream()
-
-    ext.output = {
-        return standardOutput.toString()
-    }
-
+    
     inputs.file "${projectDir}/gulpfile.js"
     inputs.dir "${projectDir}/deploy/stage"
 }
+
+clean.dependsOn gulpClean
 
 task assembleJs(type: Exec, dependsOn: "installNodeTools") {
     workingDir "$projectDir"
     commandLine 'gulp', 'stage'
     standardOutput = new ByteArrayOutputStream()
 
-    ext.output = {
-        return standardOutput.toString()
-    }
-
     inputs.file "${projectDir}/gulpfile.js"
     inputs.dir "${projectDir}/src"
 
     outputs.dir "${projectDir}/deploy/stage"
 }
-
-
-
