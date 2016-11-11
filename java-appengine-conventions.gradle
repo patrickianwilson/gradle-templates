@@ -15,9 +15,9 @@ buildscript {
 apply plugin: 'war'
 apply plugin: 'appengine'
 
-apply from: "${rootProject.projectDir}/config/gradle/includes/java-conventions.gradle"
-apply from: "${rootProject.projectDir}/config/gradle/includes/guice-conventions.gradle"
-apply from: "${rootProject.projectDir}/config/gradle/includes/jersey-conventions.gradle"
+apply from: "${rootProject.projectDir}/config/gradle/java/java-conventions.gradle"
+apply from: "${rootProject.projectDir}/config/gradle/java/guice-conventions.gradle"
+apply from: "${rootProject.projectDir}/config/gradle/java/jersey-conventions.gradle"
 
 ext {
     gaeVersion = '1.9.27'

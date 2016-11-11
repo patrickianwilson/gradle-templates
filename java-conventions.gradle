@@ -1,5 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'checkstyle'
+// apply plugin: 'checkstyle'
 apply plugin: 'maven'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
@@ -53,19 +53,19 @@ test {
     exclude "**/Base*.class"
 }
 
-checkstyle {
-    ignoreFailures = true
-    configProperties = [samedir: "$rootProject.projectDir/checkstyle"]
-    configFile = file("$rootProject.projectDir/checkstyle/checkstyle.xml")
-}
+// checkstyle {
+//     ignoreFailures = true
+//     configProperties = [samedir: "$rootProject.projectDir/checkstyle"]
+//     configFile = file("$rootProject.projectDir/checkstyle/checkstyle.xml")
+// }
 
 
-checkstyleMain {
-    classpath += configurations.compile
-}
-checkstyleTest {
-    classpath += configurations.testCompile
-}
+// checkstyleMain {
+//     classpath += configurations.compile
+// }
+// checkstyleTest {
+//     classpath += configurations.testCompile
+// }
 
 configurations {
 //    all*.exclude group: "javax.servlet", module: "servlet-api"
