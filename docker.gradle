@@ -1,4 +1,12 @@
+/*
+This plugin expects the following project extensions to be defined BEFORE the plugin is applied.
 
+project.ext {
+    dockerTag = "welcome:latest"
+    dockerFile = "$projectDir/deploy/Dockerfile"
+    dockerWorkingDir = "$projectDir/deploy"
+}
+*/
 
 task assembleDockerImage(type: Exec) {
     workingDir "$projectDir"
@@ -9,11 +17,12 @@ task assembleDockerImage(type: Exec) {
         return standardOutput.toString()
     }
 
-    inputs.file "${projectDir}/deploy/Dockerfile"
-    inputs.dir "${projectDir}/deploy/stage"
+    inputs.file project.dockerFile
+    inputs.dir project.dockerWorkingDir
 
 }
 
+/*
 task publishDockerImageToGCR(type: Exec) {
     workingDir "$projectDir"
     commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, project.dockerWorkingDir
@@ -26,3 +35,5 @@ task publishDockerImageToGCR(type: Exec) {
     inputs.file "${projectDir}/deploy/Dockerfile"
     inputs.dir "${projectDir}/deploy/stage"
 }
+*/
+
