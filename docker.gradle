@@ -12,10 +12,30 @@ task assembleDockerImage(type: Exec, dependsOn: "assembleJs") {
     workingDir "$projectDir"
     commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, project.dockerWorkingDir
     
+    standardOutput = new ByteArrayOutputStream()
+
+    ext.output = {
+        return standardOutput.toString()
+    }
+
+
     inputs.file project.dockerFile
     inputs.dir project.dockerWorkingDir
 
 }
+
+assembleDockerImage << {
+    String dockerOut = ext.output()
+    logger.info "Docker output: " + dockerOut
+
+
+    (dockerOut =~ "Successfully built ([a-f0-9]+)").findAll {
+        discard, image ->
+            project.ext.imageId = image;
+    }
+}
+
+
 
 
 /*

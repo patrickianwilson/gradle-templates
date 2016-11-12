@@ -2,6 +2,7 @@
 This Gradle plugin will provide support for javascript applications.
  */
 task clean
+task assemble
 
 task installNodeTools(type: Exec) {
     workingDir "$projectDir"
@@ -34,3 +35,6 @@ task assembleJs(type: Exec, dependsOn: "installNodeTools") {
 
     outputs.dir "${projectDir}/deploy/stage"
 }
+
+
+
