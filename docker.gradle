@@ -10,8 +10,8 @@ project.ext {
 
 task assembleDockerImage(type: Exec, dependsOn: "assembleJs") {
     workingDir "$projectDir"
-    commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, project.dockerWorkingDir
-    
+    commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerImagePath, project.dockerWorkingDir
+
     standardOutput = new ByteArrayOutputStream()
 
     ext.output = {
@@ -28,27 +28,4 @@ assembleDockerImage << {
     String dockerOut = ext.output()
     logger.info "Docker output: " + dockerOut
 
-
-    (dockerOut =~ "Successfully built ([a-f0-9]+)").findAll {
-        discard, image ->
-            project.ext.imageId = image;
-    }
 }
-
-
-
-
-/*
-task publishDockerImageToGCR(type: Exec) {
-    workingDir "$projectDir"
-    commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, project.dockerWorkingDir
-    standardOutput = new ByteArrayOutputStream()
-
-    ext.output = {
-        return standardOutput.toString()
-    }
-
-    inputs.file "${projectDir}/deploy/Dockerfile"
-    inputs.dir "${projectDir}/deploy/stage"
-}
-*/
