@@ -3,8 +3,8 @@
 This convention plugin requires the following ext {} block on the project applying the plugin:
 
 ext {
-	mainPackage="" //the golang "main" package that should be built
-	
+    mainPackage= "project"
+    runArgs = ["help"]
 }
 */
 
@@ -12,29 +12,44 @@ ext {
 task assembleGo (type: Exec) {
 
         workingDir "$projectDir"
-        commandLine 'go', 'build', project.mainPackage
+        commandLine 'go', 'install', project.mainPackage
 
         inputs.dir "$projectDir/src/"
         outputs.dir "$projectDir/pkg"
         outputs.dir "$projectDir/bin"
 
-        def executableName = project.mainPackage.substring(project.mainPackage.lastIndexOf("/"))
+        environment ("GOPATH", projectDir)
+
+        def executableName = project.mainPackage.lastIndexOf("/") != -1 ? project.mainPackage.substring(project.mainPackage.lastIndexOf("/")) : project.mainPackage
         logger.info("Assuming executable name: $executableName")
         outputs.file "$projectDir/$executableName"
 
 }
 
+task compileGo (dependsOn: assembleGo)
+
 task runGo (type: Exec, dependsOn: assembleGo) {
     workingDir "$projectDir"
-    def executableName = [".${project.mainPackage.substring(project.mainPackage.lastIndexOf("/"))}"]
+    def executableName = project.mainPackage.lastIndexOf("/") != -1 ? project.mainPackage.substring(project.mainPackage.lastIndexOf("/")) : project.mainPackage
 
-    if (project.ext.args != null) {
-        project.ext.args.each {
-            arg-> executableName << arg
+    def cmdline = [executableName]
+
+    if (project.hasProperty("runArgs")) {
+        project.ext.runArgs.each {
+            arg -> cmdline << arg
         }
     }
 
-    commandLine executableName
 
+
+    commandLine cmdline
 
 }
+
+
+
+task cleanGo(type: Delete) {
+    delete "$projectDir/pkg"
+    delete "$projectDir/bin"
+}
+
