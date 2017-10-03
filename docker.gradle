@@ -8,32 +8,19 @@ project.ext {
 }
 */
 
-task assembleDockerImage(type: Exec) {
-    workingDir "$projectDir"
-    commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, project.dockerWorkingDir
-    standardOutput = new ByteArrayOutputStream()
+
+
+task assembleDockerImage(type: Exec, dependsOn: ["copyGoSrc","copyGoDeps"]) {
+    workingDir "$project.buildDir/gopath"
+    commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, "$project.buildDir/gopath"
 
     ext.output = {
         return standardOutput.toString()
     }
 
     inputs.file project.dockerFile
-    inputs.dir project.dockerWorkingDir
+    inputs.dir "$project.buildDir/gopath"
 
 }
 
-/*
-task publishDockerImageToGCR(type: Exec) {
-    workingDir "$projectDir"
-    commandLine 'docker', 'build', '-f', project.dockerFile, '-t', project.dockerTag, project.dockerWorkingDir
-    standardOutput = new ByteArrayOutputStream()
-
-    ext.output = {
-        return standardOutput.toString()
-    }
-
-    inputs.file "${projectDir}/deploy/Dockerfile"
-    inputs.dir "${projectDir}/deploy/stage"
-}
-*/
 
