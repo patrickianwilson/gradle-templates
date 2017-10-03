@@ -8,48 +8,79 @@ ext {
 }
 */
 
+apply plugin: "maven-publish"
 
-task assembleGo (type: Exec) {
 
-        workingDir "$projectDir"
-        commandLine 'go', 'install', project.mainPackage
+version = '0.1'
+group = "com.github.patrickianwilson"
 
-        inputs.dir "$projectDir/src/"
-        outputs.dir "$projectDir/pkg"
-        outputs.dir "$projectDir/bin"
 
-        environment ("GOPATH", projectDir)
+task copyGoSrc(type: Copy) {
+    from "src/main/go"
+    into "$project.buildDir/gopath/src"
+}
 
-        def executableName = project.mainPackage.lastIndexOf("/") != -1 ? project.mainPackage.substring(project.mainPackage.lastIndexOf("/")) : project.mainPackage
-        logger.info("Assuming executable name: $executableName")
-        outputs.file "$projectDir/$executableName"
+task packageGoLib(type: Zip) {
+    from "${project.projectDir}/src/main/go"
+    include "**/*.go"
+    exclude "**/*_test.go"
+    archiveName "${project.buildDir}/libs/ModuleServiceSdkGo.zip"
+}
+configurations {
+    gopath
+    compile
+}
+artifacts {
+    gopath packageGoLib
+}
+
+task fetchExternDeps(type: Exec, dependsOn: ["copyGoSrc", "copyGoDeps"]) {
+    workingDir "$project.buildDir/gopath"
+    commandLine 'go', 'get', "-d", "./..."
+
+    environment ("GOPATH", "$project.buildDir/gopath")
+}
+
+task copyGoDeps(type: Copy) {
+    from {
+        configurations.compile.collect { zipTree(it) }
+    }
+    into "${project.buildDir}/gopath/src"
+}
+
+task assembleGo (type: Exec, dependsOn: ["copyGoDeps", "copyGoSrc"]) {
+
+    workingDir "$project.buildDir/gopath"
+    commandLine 'go', 'install', project.mainPackage
+
+    inputs.dir "$project.buildDir/gopath/src/"
+    outputs.dir "$projectDir/pkg"
+    outputs.dir "$projectDir/bin"
+
+    environment ("GOPATH", "$project.buildDir/gopath")
+
+    def executableName = project.mainPackage.lastIndexOf("/") != -1 ? project.mainPackage.substring(project.mainPackage.lastIndexOf("/")) : project.mainPackage
+    logger.info("Assuming executable name: $executableName")
+    outputs.file "$project.buildDir/gopath/$executableName"
 
 }
 
-task compileGo (dependsOn: assembleGo)
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
 
-task runGo (type: Exec, dependsOn: assembleGo) {
-    workingDir "$projectDir"
-    def executableName = project.mainPackage.lastIndexOf("/") != -1 ? project.mainPackage.substring(project.mainPackage.lastIndexOf("/")) : project.mainPackage
-
-    def cmdline = [executableName]
-
-    if (project.hasProperty("runArgs")) {
-        project.ext.runArgs.each {
-            arg -> cmdline << arg
+            artifact packageGoLib {
+                classifier "sources"
+            }
         }
     }
-
-
-
-    commandLine cmdline
-
 }
-
-
 
 task cleanGo(type: Delete) {
-    delete "$projectDir/pkg"
-    delete "$projectDir/bin"
+    delete "$project.buildDir"
 }
 
+
+repositories {
+    mavenLocal()
+}
