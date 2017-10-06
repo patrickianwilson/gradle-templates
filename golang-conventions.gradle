@@ -7,7 +7,7 @@ ext {
     runArgs = ["help"]
 }
 */
-
+apply plugin: "base"
 apply plugin: "maven-publish"
 
 
@@ -17,21 +17,26 @@ group = "com.github.patrickianwilson"
 
 task copyGoSrc(type: Copy) {
     from "src/main/go"
-    into "$project.buildDir/gopath/src"
+    if (project.ext.has("rootPackage"))
+        into "$project.buildDir/gopath/src/$project.ext.rootPackage"
+    else
+        into "$project.buildDir/gopath/src"
 }
 
 task packageGoLib(type: Zip) {
     from "${project.projectDir}/src/main/go"
     include "**/*.go"
     exclude "**/*_test.go"
-    archiveName "${project.buildDir}/libs/ModuleServiceSdkGo.zip"
+    if (project.ext.has("rootPackage"))
+        into project.ext.rootPackage
+//    archiveName "libs/ModuleServiceSdkGo.zip"
 }
 configurations {
-    gopath
     compile
+
 }
 artifacts {
-    gopath packageGoLib
+    archives packageGoLib
 }
 
 task fetchExternDeps(type: Exec, dependsOn: ["copyGoSrc", "copyGoDeps"]) {
@@ -41,8 +46,9 @@ task fetchExternDeps(type: Exec, dependsOn: ["copyGoSrc", "copyGoDeps"]) {
     environment ("GOPATH", "$project.buildDir/gopath")
 }
 
-task copyGoDeps(type: Copy) {
+task copyGoDeps(type: Copy, dependsOn: "pkg") {
     from {
+        configurations.compile.each { logger.info("Found Dependency: $it")}
         configurations.compile.collect { zipTree(it) }
     }
     into "${project.buildDir}/gopath/src"
@@ -79,6 +85,7 @@ publishing {
 task cleanGo(type: Delete) {
     delete "$project.buildDir"
 }
+
 
 
 repositories {
